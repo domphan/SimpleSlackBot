@@ -3,10 +3,13 @@ import express = require('express');
 import { NextFunction, Request, Response } from 'express';
 import HttpStatus = require('http-status-codes');
 import morgan = require('morgan');
+import redis = require('redis');
+import RedisSMQ = require('rsmq');
 import { BotRouter } from './routes/botRoute';
+import { EventConsumer } from './controllers/Bot/EventConsumer';
+
 
 export const app = express();
-
 app.use(morgan(':method :url :status :res[content-length] - :response-time ms'));
 
 // Taken from https://gist.github.com/girliemac/d4837bfb6535e44611a4c9d069c241e6#file-snippet03-js
@@ -20,6 +23,33 @@ const rawBodyBuffer = (req, res, buf, encoding) => {
 app.use(bodyParser.urlencoded({ verify: rawBodyBuffer, extended: true }));
 app.use(bodyParser.json({ verify: rawBodyBuffer }));
 
+const RedisClient = redis.createClient(process.env.REDIS_URL);
+RedisClient.on('connect', () => {
+    console.log('Redis client connected');
+});
+RedisClient.on('error', (err) => {
+    console.log('Error: ' + err);
+});
+
+// const eventConsumer = new EventConsumer(1000);
+// eventConsumer.onCheck(() => {
+//     eventConsumer.handleEvent();
+//     eventConsumer.checkMsgQueue();
+// })
+// eventConsumer.checkMsgQueue();
+
+const rsmq = new RedisSMQ({
+    host: "redis-mq",
+    ns: "rsmq"
+});
+
+rsmq.createQueueAsync({ qname: 'eventqueue' })
+    .then((resp) => {
+        if (resp === 1) console.log('event queue created')
+    })
+    .catch((err) => {
+        if (err.name !== 'queueExists') console.log(err);
+    });
 
 app.use('/api/bot', BotRouter);
 

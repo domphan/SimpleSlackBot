@@ -1,6 +1,6 @@
 import { NextFunction, Request, Response, Router } from 'express';
-import { BotController } from '../controllers/BotController';
-import { ReqWithRawBody } from '../controllers/BotInterfaces';
+import { BotController } from '../controllers/Bot/BotController';
+import { ReqWithRawBody } from '../controllers/Bot/BotInterfaces';
 
 export const BotRouter = Router();
 const Bot = new BotController();

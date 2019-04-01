@@ -23,6 +23,8 @@ services:
       - './usr/src/app/node_modules'
     depends_on:
       - redis
+    links:
+      - redis
     environment:
       - REDIS_URL=redis://redis-mq
 
