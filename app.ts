@@ -72,4 +72,4 @@ app.use((err: any, req: Request, res: Response, next: NextFunction) => {
     return res.status(HttpStatus.UNAUTHORIZED).send(`Invalid signature`);
   }
   return res.status(HttpStatus.INTERNAL_SERVER_ERROR).send('Something went really wrong');
-})
+});

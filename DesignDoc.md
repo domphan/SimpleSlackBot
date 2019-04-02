@@ -19,8 +19,13 @@ Slack provides a way to authenticate that a request came from Slack. The bot wil
 This is how my bot will communicate to Slack in response to user commands asking for the weather. It allows us to push data in as opposed to initiating a request after a specific event. It allows the bot to get real-time data without having to allocate resources to make a request for data every second.
 
 ## Architecture
-The main objective of the architecture is to create a slack bot that can handle real-life scaling issues like many users using it at once. Perhaps maybe even servicing multiple Slack workspaces.
+The __main objective__ of the architecture is to create a slack bot that can __handle real-life scaling issues__ like many users using it at once. Perhaps maybe even servicing multiple Slack workspaces.
 
 It's easier to scale a webhook handler compared to a websocket handler because I wouldn't have to handle multiple connections from multiple channels.
 
-Since webhooks are meant to be responded to with a 200 OK quickly, the bot will respond with that, then add the task to a queue. I'm going to use RedisSMQ as the message queue and my server will consume the event and handle it.
+Since webhooks are meant to be responded to with a 200 OK quickly, the bot will respond with that, then add the task to a queue. I'm going to use __RedisSMQ as the message queue__ and my server will consume the event and handle it.
+
+__Why Express?__ The main reason: I'm most familiar using it for developing APIs. Upon doing more research on other options like Flask and Django, the value that Express has __handling asynchronous events__ became very apparent because Flask can only handle one request as a time without other depedencies for asynchronous request handling, like asyncio.
+
+## Command
+@weatherbot [command, city, country]

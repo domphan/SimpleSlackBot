@@ -130,13 +130,13 @@ export class EventConsumer extends EventEmitter {
 
 
   private sendErrorResponse = async () => {
-    const response: AxiosResponse = await axios.post(this.webhookURL,
+    const response = await axios.post(this.webhookURL,
       {
         text: `Hi, I couldn\'t find that weather data for you.
 Did you make sure to use underscores instead of spaces in the city name?
 Maybe try adding the country code too.`
       }
-    );
+    ).catch(err => console.error(err));
   }
 
   private kelvinToFarenheit = (kelvinTemp) => {
@@ -144,16 +144,18 @@ Maybe try adding the country code too.`
   }
 
   private unknownCommand = async (messageObj) => {
-    const response: AxiosResponse = await axios.post(this.webhookURL,
+    const response = await axios.post(this.webhookURL,
       {
         text: `Hi, I don\'t understand your command\n` +
           `usage: @weatherbot weather {CITY} {COUNTRYCODE}\n` +
           `Spaces in cities must be replaced with an underscore\n` +
           `Country code list must be in ALPHA-2 (ISO 3166) format `
       }
-    );
-    if (response.status >= 200 && response.status < 400) {
-      this.delMsgFromQueue(messageObj.id);
+    ).catch(err => console.log(err));
+    if (response) {
+      if (response.status >= 200 && response.status < 400) {
+        this.delMsgFromQueue(messageObj.id);
+      }
     }
   }
 
