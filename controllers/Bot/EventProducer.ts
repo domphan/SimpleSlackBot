@@ -20,12 +20,7 @@ export class EventProducer {
       host: redisEndpoint,
       password: redisPW
     });
-    // RedisClient.on('connect', () => {
-    //   console.log('Redis client connected');
-    // });
-    // RedisClient.on('error', (err) => {
-    //   console.log('Error: ' + err);
-    // });
+
     this.rsmq = new RedisSMQ({
       client: RedisClient,
       ns: "rsmq"

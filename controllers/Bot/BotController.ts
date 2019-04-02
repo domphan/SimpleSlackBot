@@ -14,9 +14,9 @@ export class BotController {
   }
 
   public handleChallenge = async (req: ReqWithRawBody, res: Response, next: NextFunction) => {
-    // if (req.body.challenge) {
-    //     res.json({ challenge: req.body.challenge });
-    // }
+    if (req.body.challenge) {
+      return res.json({ challenge: req.body.challenge });
+    }
     if (!await this.verifyRequest(req)) {
       res.status(UNAUTHORIZED).json({ message: 'Request could not be verified' })
     }

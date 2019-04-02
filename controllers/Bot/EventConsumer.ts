@@ -32,12 +32,7 @@ export class EventConsumer extends EventEmitter {
       host: redisEndpoint,
       password: redisPW
     });
-    // RedisClient.on('connect', () => {
-    //   console.log('Redis client connected');
-    // });
-    // RedisClient.on('error', (err) => {
-    //   console.log('Error: ' + err);
-    // });
+
     this.rsmq = new RedisSMQ({
       client: RedisClient,
       ns: "rsmq"
@@ -93,15 +88,16 @@ export class EventConsumer extends EventEmitter {
     const { text } = JSON.parse(messageObj.message).event;
     console.log(text);
     const commands = await this.parseMention(text);
-    if (commands['action'] !== 'weather') {
+    if (commands['action'] !== 'weather' || !commands['city']) {
       return this.unknownCommand(messageObj);
     }
+
     this.getWeather(commands['city'], commands['country']);
     this.delMsgFromQueue(messageObj.id);
   }
 
   private parseMention = (text): object => {
-    const commands = text.split(" ");
+    const commands = text.split(' ');
     return {
       action: commands[1],
       city: commands[2],
@@ -120,11 +116,11 @@ export class EventConsumer extends EventEmitter {
       const { temp, humidity, temp_min, temp_max } = response.data.main;
       const { country } = response.data.sys;
       const webhookResponse = await axios.post(this.webhookURL, {
-        text: `Looks like it's ${this.kelvinToFarenheit(temp)}F \
-outside in ${city.replace('_', '')}, ${country} (country code)
-Today's high is ${this.kelvinToFarenheit(temp_max)}F
-Today's low is ${this.kelvinToFarenheit(temp_min)}F
-Humidity is at ${humidity} %`
+        text: `Looks like it's ${this.kelvinToFarenheit(temp)}F ` +
+          `outside in ${city.replace('_', ' ')}, ${country} (country)\n` +
+          `Today's high is ${this.kelvinToFarenheit(temp_max)}F\n` +
+          `Today's low is ${this.kelvinToFarenheit(temp_min)}F\n` +
+          `Humidity is at ${humidity} %`
       }).catch(err => {
         throw Error('Unable to post to slack');
       });
@@ -149,7 +145,12 @@ Maybe try adding the country code too.`
 
   private unknownCommand = async (messageObj) => {
     const response: AxiosResponse = await axios.post(this.webhookURL,
-      { text: 'Hi, I don\'t understand your command' }
+      {
+        text: `Hi, I don\'t understand your command\n` +
+          `usage: @weatherbot weather {CITY} {COUNTRYCODE}\n` +
+          `Spaces in cities must be replaced with an underscore\n` +
+          `Country code list must be in ALPHA-2 (ISO 3166) format `
+      }
     );
     if (response.status >= 200 && response.status < 400) {
       this.delMsgFromQueue(messageObj.id);

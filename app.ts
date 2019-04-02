@@ -9,7 +9,7 @@ import RedisSMQ = require('rsmq');
 import { BotRouter } from './routes/botRoute';
 import { EventConsumer } from './controllers/Bot/EventConsumer';
 
-
+const ONE_SECOND = 1000;
 export const app = express();
 app.use(morgan(':method :url :status :res[content-length] - :response-time ms'));
 
@@ -24,6 +24,7 @@ const rawBodyBuffer = (req, res, buf, encoding) => {
 app.use(bodyParser.urlencoded({ verify: rawBodyBuffer, extended: true }));
 app.use(bodyParser.json({ verify: rawBodyBuffer }));
 
+// Getting redis up and running
 nconf.argv().env().file('keys.json');
 const redisEndpoint = nconf.get('redis_endpoint');
 const redisPort = nconf.get('redis_port');
@@ -42,13 +43,15 @@ RedisClient.on('error', (err) => {
   console.log('Error: ' + err);
 });
 
-const eventConsumer = new EventConsumer(1000);
+// Getting the consumer up and running
+const eventConsumer = new EventConsumer(ONE_SECOND);
 eventConsumer.onCheck(() => {
   eventConsumer.handleEvent();
   eventConsumer.checkMsgQueue();
-})
+});
 eventConsumer.checkMsgQueue();
 
+// Create the queue if it doesn't already exist
 const rsmq = new RedisSMQ({
   client: RedisClient,
   ns: "rsmq"
