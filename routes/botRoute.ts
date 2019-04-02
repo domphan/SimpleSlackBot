@@ -6,10 +6,10 @@ export const BotRouter = Router();
 const Bot = new BotController();
 
 BotRouter.get('/', (req: ReqWithRawBody, res: Response, next: NextFunction) => {
-    Bot.testMe(req, res, next);
+  Bot.testMe(req, res, next);
 });
 
 BotRouter.post('/', (req: ReqWithRawBody, res: Response, next: NextFunction) => {
-    Bot.handleChallenge(req, res, next);
+  Bot.handleChallenge(req, res, next);
 });
 
